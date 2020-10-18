@@ -1,578 +1,11 @@
  #  A Whale off the Port(folio)
 
- In this assignment, you'll get to use what you've learned this week to evaluate the performance among various algorithmic, hedge, and mutual fund portfolios and compare them against the S&P 500.
-
-
-```python
-import pandas as pd
-import numpy as np
-import datetime as dt
-from pathlib import Path
-%matplotlib inline
-```
-
-# Data Cleaning
-
-In this section, you will need to read the CSV files into DataFrames and perform any necessary data cleaning steps. After cleaning, combine all DataFrames into a single DataFrame.
-
-Files:
-1. whale_returns.csv
-2. algo_returns.csv
-3. sp500_history.csv
+![alt Whale image](Whale.png)
 
 ## Whale Returns
 
-Read the Whale Portfolio daily returns and clean the data
+We are trying to determine which portfolio has performed best using data analysis. Here is the historic returns from "whale" investors, algorithmic portfolios, and the overall market of the S&P 500:
 
-
-```python
-# Reading whale returns
-whale_returns_csv = Path("Resources/whale_returns.csv")
-whale_returns = pd.read_csv(whale_returns_csv, index_col="Date", parse_dates=True, infer_datetime_format=True)
-whale_returns.sort_index(ascending=True, inplace=True)
-whale_returns.head()
-```
-
-
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>SOROS FUND MANAGEMENT LLC</th>
-      <th>PAULSON &amp; CO.INC.</th>
-      <th>TIGER GLOBAL MANAGEMENT LLC</th>
-      <th>BERKSHIRE HATHAWAY INC</th>
-    </tr>
-    <tr>
-      <th>Date</th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>2015-03-02</th>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>2015-03-03</th>
-      <td>-0.001266</td>
-      <td>-0.004981</td>
-      <td>-0.000496</td>
-      <td>-0.006569</td>
-    </tr>
-    <tr>
-      <th>2015-03-04</th>
-      <td>0.002230</td>
-      <td>0.003241</td>
-      <td>-0.002534</td>
-      <td>0.004213</td>
-    </tr>
-    <tr>
-      <th>2015-03-05</th>
-      <td>0.004016</td>
-      <td>0.004076</td>
-      <td>0.002355</td>
-      <td>0.006726</td>
-    </tr>
-    <tr>
-      <th>2015-03-06</th>
-      <td>-0.007905</td>
-      <td>-0.003574</td>
-      <td>-0.008481</td>
-      <td>-0.013098</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-
-
-
-```python
-# Count nulls
-print(whale_returns.isnull().sum())
-print(whale_returns[whale_returns.isnull().any(axis=1)])
-```
-
-    SOROS FUND MANAGEMENT LLC      1
-    PAULSON & CO.INC.              1
-    TIGER GLOBAL MANAGEMENT LLC    1
-    BERKSHIRE HATHAWAY INC         1
-    dtype: int64
-                SOROS FUND MANAGEMENT LLC  PAULSON & CO.INC.   \
-    Date                                                        
-    2015-03-02                        NaN                 NaN   
-    
-                TIGER GLOBAL MANAGEMENT LLC  BERKSHIRE HATHAWAY INC  
-    Date                                                             
-    2015-03-02                          NaN                     NaN  
-
-
-
-```python
-# Drop nulls
-whale_returns.dropna(inplace=True)
-whale_returns.isnull().sum()
-```
-
-
-
-
-    SOROS FUND MANAGEMENT LLC      0
-    PAULSON & CO.INC.              0
-    TIGER GLOBAL MANAGEMENT LLC    0
-    BERKSHIRE HATHAWAY INC         0
-    dtype: int64
-
-
-
-## Algorithmic Daily Returns
-
-Read the algorithmic daily returns and clean the data
-
-
-```python
-# Reading algorithmic returns
-algo_returns_csv = Path("Resources/algo_returns.csv")
-algo_returns = pd.read_csv(algo_returns_csv, index_col="Date", parse_dates=True, infer_datetime_format=True)
-algo_returns.sort_index(ascending=True, inplace=True)
-algo_returns.head()
-```
-
-
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Algo 1</th>
-      <th>Algo 2</th>
-    </tr>
-    <tr>
-      <th>Date</th>
-      <th></th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>2014-05-28</th>
-      <td>0.001745</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>2014-05-29</th>
-      <td>0.003978</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>2014-05-30</th>
-      <td>0.004464</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>2014-06-02</th>
-      <td>0.005692</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>2014-06-03</th>
-      <td>0.005292</td>
-      <td>NaN</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-
-
-
-```python
-# Count nulls
-print(algo_returns.isnull().sum())
-print(algo_returns[algo_returns.isnull().any(axis=1)])
-```
-
-    Algo 1    0
-    Algo 2    6
-    dtype: int64
-                  Algo 1  Algo 2
-    Date                        
-    2014-05-28  0.001745     NaN
-    2014-05-29  0.003978     NaN
-    2014-05-30  0.004464     NaN
-    2014-06-02  0.005692     NaN
-    2014-06-03  0.005292     NaN
-    2014-06-04 -0.001838     NaN
-
-
-
-```python
-# Drop nulls
-algo_returns.dropna(inplace=True)
-algo_returns.isnull().sum()
-```
-
-
-
-
-    Algo 1    0
-    Algo 2    0
-    dtype: int64
-
-
-
-## S&P 500 Returns
-
-Read the S&P500 Historic Closing Prices and create a new daily returns DataFrame from the data. 
-
-
-```python
-# Reading S&P 500 Closing Prices
-sp500_history_csv = Path("Resources/sp500_history.csv")
-sp500_history = pd.read_csv(sp500_history_csv, index_col="Date", parse_dates=True, infer_datetime_format=True)
-sp500_history.sort_index(ascending=True, inplace=True)
-sp500_history.head()
-```
-
-
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Close</th>
-    </tr>
-    <tr>
-      <th>Date</th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>2012-10-01</th>
-      <td>$1444.49</td>
-    </tr>
-    <tr>
-      <th>2012-10-02</th>
-      <td>$1445.75</td>
-    </tr>
-    <tr>
-      <th>2012-10-03</th>
-      <td>$1450.99</td>
-    </tr>
-    <tr>
-      <th>2012-10-04</th>
-      <td>$1461.40</td>
-    </tr>
-    <tr>
-      <th>2012-10-05</th>
-      <td>$1460.93</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-
-
-
-```python
-# Check Data Types
-sp500_history.dtypes
-```
-
-
-
-
-    Close    object
-    dtype: object
-
-
-
-
-```python
-# Fix Data Types
-sp500_history["Close"] = sp500_history["Close"].str.replace('$', ' ').astype('float')
-print(sp500_history.dtypes)
-sp500_history.head()
-```
-
-    Close    float64
-    dtype: object
-
-
-
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Close</th>
-    </tr>
-    <tr>
-      <th>Date</th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>2012-10-01</th>
-      <td>1444.49</td>
-    </tr>
-    <tr>
-      <th>2012-10-02</th>
-      <td>1445.75</td>
-    </tr>
-    <tr>
-      <th>2012-10-03</th>
-      <td>1450.99</td>
-    </tr>
-    <tr>
-      <th>2012-10-04</th>
-      <td>1461.40</td>
-    </tr>
-    <tr>
-      <th>2012-10-05</th>
-      <td>1460.93</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-
-
-
-```python
-# Calculate Daily Returns
-sp500_daily_returns = sp500_history.pct_change()
-sp500_daily_returns.head()
-```
-
-
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Close</th>
-    </tr>
-    <tr>
-      <th>Date</th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>2012-10-01</th>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>2012-10-02</th>
-      <td>0.000872</td>
-    </tr>
-    <tr>
-      <th>2012-10-03</th>
-      <td>0.003624</td>
-    </tr>
-    <tr>
-      <th>2012-10-04</th>
-      <td>0.007174</td>
-    </tr>
-    <tr>
-      <th>2012-10-05</th>
-      <td>-0.000322</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-
-
-
-```python
-# Drop nulls
-print(sp500_daily_returns.isnull().sum())
-sp500_daily_returns.dropna(inplace=True)
-print(sp500_daily_returns.isnull().sum())
-```
-
-    Close    1
-    dtype: int64
-    Close    0
-    dtype: int64
-
-
-
-```python
-# Rename Column
-sp500_daily_returns.columns = ["S&P 500"]
-sp500_daily_returns.head()
-```
-
-
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>S&amp;P 500</th>
-    </tr>
-    <tr>
-      <th>Date</th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>2012-10-02</th>
-      <td>0.000872</td>
-    </tr>
-    <tr>
-      <th>2012-10-03</th>
-      <td>0.003624</td>
-    </tr>
-    <tr>
-      <th>2012-10-04</th>
-      <td>0.007174</td>
-    </tr>
-    <tr>
-      <th>2012-10-05</th>
-      <td>-0.000322</td>
-    </tr>
-    <tr>
-      <th>2012-10-08</th>
-      <td>-0.003457</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-
-
-## Combine Whale, Algorithmic, and S&P 500 Returns
-
-
-```python
-# Concatenate all DataFrames into a single DataFrame
-daily_returns = pd.concat([whale_returns, algo_returns, sp500_daily_returns], axis="columns", join="inner")
-daily_returns.sort_index(inplace=True)
-daily_returns.head()
-```
-
-
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -647,8 +80,69 @@ daily_returns.head()
       <td>0.001303</td>
       <td>0.003944</td>
     </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>2019-04-16</th>
+      <td>0.002699</td>
+      <td>0.000388</td>
+      <td>-0.000831</td>
+      <td>0.000837</td>
+      <td>-0.006945</td>
+      <td>0.002899</td>
+      <td>0.000509</td>
+    </tr>
+    <tr>
+      <th>2019-04-17</th>
+      <td>-0.002897</td>
+      <td>-0.006467</td>
+      <td>-0.004409</td>
+      <td>0.003222</td>
+      <td>-0.010301</td>
+      <td>-0.005228</td>
+      <td>-0.002274</td>
+    </tr>
+    <tr>
+      <th>2019-04-18</th>
+      <td>0.001448</td>
+      <td>0.001222</td>
+      <td>0.000582</td>
+      <td>0.001916</td>
+      <td>-0.000588</td>
+      <td>-0.001229</td>
+      <td>0.001579</td>
+    </tr>
+    <tr>
+      <th>2019-04-22</th>
+      <td>-0.002586</td>
+      <td>-0.007333</td>
+      <td>-0.003640</td>
+      <td>-0.001088</td>
+      <td>0.000677</td>
+      <td>-0.001936</td>
+      <td>0.001012</td>
+    </tr>
+    <tr>
+      <th>2019-04-23</th>
+      <td>0.007167</td>
+      <td>0.003485</td>
+      <td>0.006472</td>
+      <td>0.013278</td>
+      <td>0.004969</td>
+      <td>0.009622</td>
+      <td>0.008841</td>
+    </tr>
   </tbody>
 </table>
+<p>1043 rows × 7 columns</p>
 </div>
 
 
@@ -678,7 +172,7 @@ daily_returns.plot(figsize = (15,10))
 
 
     
-![png](output_23_1.png)
+![png](output_25_1.png)
     
 
 
@@ -699,7 +193,7 @@ df_cum.plot(figsize = (15,10))
 
 
     
-![png](output_24_1.png)
+![png](output_26_1.png)
     
 
 
@@ -727,7 +221,7 @@ daily_returns.plot(kind = "box", figsize = (15, 10))
 
 
     
-![png](output_26_1.png)
+![png](output_28_1.png)
     
 
 
@@ -850,7 +344,7 @@ riskiest
 ```python
 # Calculate the annualized standard deviation (252 trading days)
 annualized_daily_returns_std = daily_returns_std * np.sqrt(252)
-annualized_daily_returns_std.head()
+annualized_daily_returns_std
 ```
 
 
@@ -898,6 +392,14 @@ annualized_daily_returns_std.head()
       <th>Algo 1</th>
       <td>0.120967</td>
     </tr>
+    <tr>
+      <th>Algo 2</th>
+      <td>0.132430</td>
+    </tr>
+    <tr>
+      <th>S&amp;P 500</th>
+      <td>0.135786</td>
+    </tr>
   </tbody>
 </table>
 </div>
@@ -931,7 +433,7 @@ daily_returns.rolling(window = 21).std().plot(figsize=(15, 10))
 
 
     
-![png](output_32_1.png)
+![png](output_34_1.png)
     
 
 
@@ -1071,7 +573,7 @@ beta_berkshire.plot(kind='line', figsize=(15, 10))
 
 
     
-![png](output_34_1.png)
+![png](output_36_1.png)
     
 
 
@@ -1093,7 +595,7 @@ beta_daily_exponential.plot(kind="line", figsize=(15, 10))
 
 
     
-![png](output_35_1.png)
+![png](output_37_1.png)
     
 
 
@@ -1141,7 +643,7 @@ sharpe_ratios.plot(kind='bar', title="Sharpe Ratios")
 
 
     
-![png](output_39_1.png)
+![png](output_41_1.png)
     
 
 
@@ -1825,7 +1327,7 @@ sym_portfolio.head()
 ```python
 # Drop Nulls
 sym_portfolio.dropna(inplace=True)
-sym_portfolio.head()
+sym_portfolio
 ```
 
 
@@ -1867,7 +1369,7 @@ sym_portfolio.head()
   <tbody>
     <tr>
       <th>2017-10-17</th>
-      <td>14.16</td>
+      <td>14.160000</td>
       <td>258.619995</td>
       <td>197.750000</td>
       <td>107.540001</td>
@@ -1875,7 +1377,7 @@ sym_portfolio.head()
     </tr>
     <tr>
       <th>2017-10-18</th>
-      <td>14.07</td>
+      <td>14.070000</td>
       <td>260.040009</td>
       <td>197.580002</td>
       <td>107.800003</td>
@@ -1883,7 +1385,7 @@ sym_portfolio.head()
     </tr>
     <tr>
       <th>2017-10-19</th>
-      <td>13.95</td>
+      <td>13.950000</td>
       <td>259.040009</td>
       <td>197.800003</td>
       <td>107.019997</td>
@@ -1891,7 +1393,7 @@ sym_portfolio.head()
     </tr>
     <tr>
       <th>2017-10-20</th>
-      <td>13.81</td>
+      <td>13.810000</td>
       <td>264.750000</td>
       <td>196.899994</td>
       <td>107.550003</td>
@@ -1899,14 +1401,63 @@ sym_portfolio.head()
     </tr>
     <tr>
       <th>2017-10-23</th>
-      <td>14.10</td>
+      <td>14.100000</td>
       <td>262.320007</td>
       <td>196.619995</td>
       <td>107.529999</td>
       <td>88.650002</td>
     </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>2020-10-12</th>
+      <td>84.290001</td>
+      <td>167.350006</td>
+      <td>569.039978</td>
+      <td>206.399994</td>
+      <td>144.250000</td>
+    </tr>
+    <tr>
+      <th>2020-10-13</th>
+      <td>85.279999</td>
+      <td>162.139999</td>
+      <td>569.929993</td>
+      <td>204.320007</td>
+      <td>146.229996</td>
+    </tr>
+    <tr>
+      <th>2020-10-14</th>
+      <td>84.209999</td>
+      <td>163.240005</td>
+      <td>563.809998</td>
+      <td>202.199997</td>
+      <td>143.940002</td>
+    </tr>
+    <tr>
+      <th>2020-10-15</th>
+      <td>83.129997</td>
+      <td>164.240005</td>
+      <td>558.799988</td>
+      <td>199.550003</td>
+      <td>144.529999</td>
+    </tr>
+    <tr>
+      <th>2020-10-16</th>
+      <td>83.169998</td>
+      <td>167.350006</td>
+      <td>552.460022</td>
+      <td>200.259995</td>
+      <td>144.710007</td>
+    </tr>
   </tbody>
 </table>
+<p>756 rows × 5 columns</p>
 </div>
 
 
@@ -1920,7 +1471,7 @@ weights = [1/5, 1/5, 1/5, 1/5, 1/5]
 my_portfolio = sym_portfolio.dot(weights)
 my_portfolio_returns = my_portfolio.pct_change()
 my_portfolio_returns.dropna(inplace=True)
-my_portfolio_returns.head()
+my_portfolio_returns
 ```
 
 
@@ -1932,7 +1483,13 @@ my_portfolio_returns.head()
     2017-10-20    0.009395
     2017-10-23   -0.001835
     2017-10-24    0.009115
-    dtype: float64
+                    ...   
+    2020-10-12    0.018229
+    2020-10-13   -0.002928
+    2020-10-14   -0.008990
+    2020-10-15   -0.006178
+    2020-10-16   -0.002000
+    Length: 755, dtype: float64
 
 
 
@@ -2304,7 +1861,7 @@ portfolio_returns_std = pd.DataFrame(portfolio_returns.std())
 portfolio_returns_std.columns = ["STD"]
 
 annualized_portfolio_returns_std = portfolio_returns_std * np.sqrt(252)
-annualized_portfolio_returns_std.head()
+annualized_portfolio_returns_std
 ```
 
 
@@ -2352,6 +1909,18 @@ annualized_portfolio_returns_std.head()
       <th>BERKSHIRE HATHAWAY INC</th>
       <td>0.223649</td>
     </tr>
+    <tr>
+      <th>Algo 1</th>
+      <td>0.117606</td>
+    </tr>
+    <tr>
+      <th>Algo 2</th>
+      <td>0.133711</td>
+    </tr>
+    <tr>
+      <th>S&amp;P 500</th>
+      <td>0.151731</td>
+    </tr>
   </tbody>
 </table>
 </div>
@@ -2373,7 +1942,7 @@ portfolio_returns.rolling(window = 21).std().plot(figsize=(15,10))
 
 
     
-![png](output_60_1.png)
+![png](output_62_1.png)
     
 
 
@@ -2414,7 +1983,7 @@ new_sharpe_ratios.plot(kind='bar', title="Sharpe Ratios")
 
 
     
-![png](output_62_1.png)
+![png](output_64_1.png)
     
 
 
@@ -2573,7 +2142,7 @@ beta_portfolio.plot(kind='line', figsize=(15, 10))
 
 
     
-![png](output_64_1.png)
+![png](output_66_1.png)
     
 
 
