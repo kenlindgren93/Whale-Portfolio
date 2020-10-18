@@ -312,7 +312,7 @@ It is hard to tell from this graph how closely related some portfolios are to th
 </table>
 </div>
 
-No matter how far these other portfolios might seem, the S&P does affect each one. Some more than others. Take a look at the "riskiest" portfolio of Berkshire Hathaway when compared to the S&P:
+No matter how independent these other portfolios might seem, the S&P does affect each one. Some more than others. Take a look at the "riskiest" portfolio of Berkshire Hathaway when compared to the S&P:
 
     
 ![png](output_36_1.png)
